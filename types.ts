@@ -1,8 +1,8 @@
 export interface ComparisonCriterion {
   name: string;
-  descriptions: string[]; // Parallel to the items array
-  scores: number[]; // Parallel to the items array, 1-10
-  winnerIndex: number; // -1 for tie/N/A
+  descriptions: string[]; 
+  scores: number[]; 
+  winnerIndex: number;
 }
 
 export interface ComparisonResult {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { ComparisonResult } from '../types';
-import { Trophy, CheckCircle, XCircle, Minus } from 'lucide-react';
+import { Trophy } from 'lucide-react';
 
 interface ComparisonTableProps {
   data: ComparisonResult;
@@ -12,7 +12,7 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({ data }) => {
       <table className="w-full border-collapse text-left text-sm">
         <thead>
           <tr className="bg-slate-900/50">
-            <th className="p-4 font-semibold text-slate-400 border-b border-slate-700">Criteria</th>
+            <th className="p-4 font-semibold text-slate-400 border-b border-slate-700 w-1/4">Criteria</th>
             {data.items.map((item, idx) => (
               <th key={idx} className="p-4 font-bold text-lg text-white border-b border-slate-700 min-w-[200px]">
                 {item}
@@ -28,7 +28,6 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({ data }) => {
               </td>
               {criterion.descriptions.map((desc, itemIdx) => {
                 const isWinner = criterion.winnerIndex === itemIdx;
-                const isTie = criterion.winnerIndex === -1;
                 const score = criterion.scores[itemIdx];
 
                 return (
@@ -40,11 +39,11 @@ const ComparisonTable: React.FC<ComparisonTableProps> = ({ data }) => {
                           score >= 5 ? 'bg-yellow-500/20 text-yellow-400' :
                           'bg-red-500/20 text-red-400'
                         }`}>
-                          Score: {score}/10
+                          {score}/10
                         </span>
                         {isWinner && <Trophy className="w-4 h-4 text-yellow-500" />}
                       </div>
-                      <p className="text-slate-400 leading-relaxed">{desc}</p>
+                      <p className="text-slate-400 leading-relaxed text-xs sm:text-sm">{desc}</p>
                     </div>
                   </td>
                 );

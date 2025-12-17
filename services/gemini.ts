@@ -1,23 +1,21 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { ComparisonResult } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
 const comparisonSchema: Schema = {
   type: Type.OBJECT,
   properties: {
     items: {
       type: Type.ARRAY,
       items: { type: Type.STRING },
-      description: "The names of the items being compared, normalized if necessary.",
+      description: "The normalized names of the items being compared.",
     },
     summary: {
       type: Type.STRING,
-      description: "A concise executive summary of the comparison.",
+      description: "A concise 2-3 sentence summary of the main differences.",
     },
     verdict: {
       type: Type.STRING,
-      description: "A final conclusion or recommendation based on the comparison.",
+      description: "A definitive recommendation or conclusion.",
     },
     criteria: {
       type: Type.ARRAY,
@@ -26,21 +24,21 @@ const comparisonSchema: Schema = {
         properties: {
           name: {
             type: Type.STRING,
-            description: "The name of the comparison attribute (e.g., Price, Performance, Flavor).",
+            description: "Criterion name (e.g. Cost, Speed).",
           },
           descriptions: {
             type: Type.ARRAY,
             items: { type: Type.STRING },
-            description: "A short text description for each item regarding this attribute. Order must match the items array.",
+            description: "Short description for each item.",
           },
           scores: {
             type: Type.ARRAY,
             items: { type: Type.NUMBER },
-            description: "A numerical score from 1 to 10 for each item on this attribute. 10 is best.",
+            description: "Score 1-10 for each item.",
           },
           winnerIndex: {
             type: Type.INTEGER,
-            description: "The index of the item that wins this category. Use -1 if it's a tie or subjective.",
+            description: "Index of winner, or -1 for tie.",
           },
         },
         required: ["name", "descriptions", "scores", "winnerIndex"],
@@ -51,18 +49,19 @@ const comparisonSchema: Schema = {
 };
 
 export const generateComparison = async (items: string[]): Promise<ComparisonResult> => {
+  // Initialize inside function to ensure environment is ready
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  
   const prompt = `
-    Compare the following items: ${items.join(", ")}.
+    Compare: ${items.join(", ")}.
     
-    Dynamically determine the most relevant attributes/criteria for comparing these specific things.
-    For example, if comparing cars, use Speed, Safety, Price. If comparing framework, use Performance, Ecosystem, Learning Curve.
-    
+    Determine 5-6 key attributes relevant to these items.
     For each attribute:
-    1. Provide a short description for each item.
-    2. Assign a score from 1-10 (10 being best/highest positive impact).
-    3. Determine a winner index.
+    1. Score each item (1-10).
+    2. Provide a short reason.
+    3. Pick a winner.
     
-    Be objective, smart, and context-aware. If the items are abstract concepts (e.g., "Love vs Money"), compare them philosophically but still provide structure.
+    If items are very different (e.g. "Apple vs Orange"), compare on abstract qualities (e.g. "Nutrition", "Convenience").
   `;
 
   try {
@@ -72,16 +71,16 @@ export const generateComparison = async (items: string[]): Promise<ComparisonRes
       config: {
         responseMimeType: "application/json",
         responseSchema: comparisonSchema,
-        temperature: 0.4, // Keep it relatively factual but creative enough for abstract concepts
+        temperature: 0.4, 
       },
     });
 
     if (response.text) {
       return JSON.parse(response.text) as ComparisonResult;
     }
-    throw new Error("No data returned from Gemini");
+    throw new Error("Empty response from AI");
   } catch (error) {
-    console.error("Gemini API Error:", error);
+    console.error("AI Error:", error);
     throw error;
   }
 };
